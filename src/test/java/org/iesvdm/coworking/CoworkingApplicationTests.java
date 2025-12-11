@@ -13,7 +13,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 import static java.util.Comparator.comparing;
 import static java.util.Comparator.reverseOrder;
@@ -297,9 +299,110 @@ class CoworkingApplicationTests {
 
     }
     // 16. Devuelve el nombre del miembro que pagó la reserva de mayor cuantía (precio_hora × horas aplicando el descuento).
+    @Test
+    void test16(){
+        List<Reserva> reservas = reservaRepository.findAll();
+
+        var miembroMayorPago = reservas.stream()
+                .map(r -> {
+                    // Calcular precio base (precio_hora × horas)
+                    BigDecimal precioBase = r.getSala().getPrecioHora()
+                            .multiply(r.getHoras());
+
+                    // Aplicar descuento si existe
+                    BigDecimal descuento = r.getDescuentoPct() != null
+                            ? r.getDescuentoPct()
+                            : BigDecimal.ZERO;
+
+                    BigDecimal factorDescuento = BigDecimal.ONE
+                            .subtract(descuento.divide(BigDecimal.valueOf(100)));
+
+                    BigDecimal cuantiaTotal = precioBase.multiply(factorDescuento);
+
+                    return Map.entry(r.getMiembro().getNombre(), cuantiaTotal);
+                })
+                .max(Comparator.comparing(Map.Entry::getValue))
+                .map(Map.Entry::getKey)
+                .orElse(null);
+
+        System.out.println("Miembro con mayor cuantía: " + miembroMayorPago);
+
+        Assertions.assertNotNull(miembroMayorPago);
+        // La mayor cuantía debería ser del Auditorio Sol (45€/h × 3h = 135€) o Sala Embajadores
+        Assertions.assertEquals("Noa Sánchez", miembroMayorPago);
+    }
+
     // 17. Devuelve los nombres de los miembros que hayan coincidido en alguna reserva con la miembro Ana Beltrán
     // (misma sala y fecha con solape horario).
+    @Test
+    void test17(){
+        List<Reserva> reservas = reservaRepository.findAll();
+
+        // Obtener todas las reservas de Ana Beltrán
+        var reservasAna = reservas.stream()
+                .filter(r -> r.getMiembro().getNombre().equals("Ana Beltrán"))
+                .toList();
+
+        // Encontrar miembros que coinciden con Ana (misma sala, fecha y solape horario)
+        var miembrosCoincidentes = reservas.stream()
+                .filter(r -> !r.getMiembro().getNombre().equals("Ana Beltrán"))
+                .filter(r -> reservasAna.stream().anyMatch(rAna ->
+                        // Misma sala
+                        rAna.getSala().getId().equals(r.getSala().getId()) &&
+                                // Misma fecha
+                                rAna.getFecha().equals(r.getFecha()) &&
+                                // Solape horario: (inicio1 < fin2) AND (inicio2 < fin1)
+                                rAna.getHoraInicio().isBefore(r.getHoraFin()) &&
+                                r.getHoraInicio().isBefore(rAna.getHoraFin())
+                ))
+                .map(r -> r.getMiembro().getNombre())
+                .distinct()
+                .toList();
+
+        miembrosCoincidentes.forEach(System.out::println);
+
+        // Ana Beltrán tiene reservas en:
+        // - Sala Retiro (id:1) el 2024-09-10 de 09:00 a 12:00
+        // - Sala Ópera (id:19) el 2024-12-02 de 09:30 a 11:30
+        // Verificar que no hay coincidencias (nadie más reservó esas salas en esas fechas/horas)
+        Assertions.assertNotNull(miembrosCoincidentes);
+        Assertions.assertTrue(miembrosCoincidentes.isEmpty(),
+                "No debería haber miembros que coincidan con Ana Beltrán en sala, fecha y horario");
+    }
+
     // 18. Devuelve el total de lo ingresado por el coworking en reservas para el mes de enero de 2025.
+    @Test
+    void test18(){
+        List<Reserva> reservas = reservaRepository.findAll();
+
+        var totalEnero2025 = reservas.stream()
+                .filter(r -> r.getFecha().getYear() == 2025 &&
+                        r.getFecha().getMonthValue() == 1)
+                .filter(r -> !r.getEstado().equals("CANCELADA")) // No contar canceladas
+                .map(r -> {
+                    // Calcular precio base
+                    BigDecimal precioBase = r.getSala().getPrecioHora()
+                            .multiply(r.getHoras());
+
+                    // Aplicar descuento
+                    BigDecimal descuento = r.getDescuentoPct() != null
+                            ? r.getDescuentoPct()
+                            : BigDecimal.ZERO;
+
+                    BigDecimal factorDescuento = BigDecimal.ONE
+                            .subtract(descuento.divide(BigDecimal.valueOf(100)));
+
+                    return precioBase.multiply(factorDescuento);
+                })
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        System.out.println("Total ingresado en enero 2025: " + totalEnero2025 + "€");
+
+        Assertions.assertTrue(totalEnero2025.compareTo(BigDecimal.ZERO) > 0);
+        // Hay 7 reservas en enero 2025 (verificar en los datos)
+        Assertions.assertTrue(totalEnero2025.compareTo(BigDecimal.valueOf(100)) > 0);
+    }
+
     // 19. Devuelve el conteo de cuántos miembros tienen la observación 'Requiere equipamiento especial' en alguna de sus reservas.
     @Test
     void test19(){
@@ -311,6 +414,10 @@ class CoworkingApplicationTests {
 
         requiere.forEach(System.out::println);
 
+        // Según los datos del schema, ninguna reserva tiene esta observación específica
+        Assertions.assertEquals(0, requiere.size(),
+                "No hay reservas con la observación 'Requiere equipamiento especial'");
+        Assertions.assertTrue(requiere.isEmpty());
     }
     // 20. Devuelve cuánto se ingresaría por la sala 'Auditorio Sol' si estuviera reservada durante todo su horario de apertura
     // en un día completo (sin descuentos).
@@ -327,8 +434,6 @@ class CoworkingApplicationTests {
         System.out.println(cuenta);
 
         Assertions.assertEquals(540.0,cuenta);
-
-
 
     }
 }
