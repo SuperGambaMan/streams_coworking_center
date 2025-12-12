@@ -13,7 +13,7 @@
 -- 5. Devuelve un listado de los miembros cuyo primer apellido es Martín. El listado tiene que estar ordenado
 -- por fecha de alta en el coworking de más reciente a menos reciente y nombre y apellidos en orden alfabético.
 
-    select * from miembro m where m.nombre like '%Martín' order by m.fecha_alta asc, m.nombre asc ;
+    select * from miembro m where m.nombre like '%Pepe' order by m.fecha_alta asc, m.nombre asc ;
 
 
 -- 7. Devuelve el listado de las 3 salas de menor precio_hora.
