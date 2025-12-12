@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourcePerFileMappings">
+    <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/9dd70bbf-3b35-4bf6-a963-14f3039b70f0/console.sql" value="9dd70bbf-3b35-4bf6-a963-14f3039b70f0" />
     <file url="file://$PROJECT_DIR$/src/main/resources/coworking_center_mysql.sql" value="65a7e0d1-ed2c-4f9d-bfbc-e15dbe33082b" />
     <file url="file://$PROJECT_DIR$/src/main/resources/queries.sql" value="65a7e0d1-ed2c-4f9d-bfbc-e15dbe33082b" />
   </component>

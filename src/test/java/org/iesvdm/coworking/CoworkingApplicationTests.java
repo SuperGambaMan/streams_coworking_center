@@ -84,8 +84,9 @@ class CoworkingApplicationTests {
         miembrosSinReserva.forEach(System.out::println);
     }
     // 3. Devuelve una lista de los id's, nombres y emails de los miembros que no tienen el teléfono registrado.
+    // El listado tiene que estar ordenado inverso alfabéticamente por nombre (z..a).
     @Test
-            void test3(){
+    void test3(){
         List<Miembro> miembros = miembroRepository.findAll();
 
         var miembroSinTlf = miembros.stream()
@@ -100,7 +101,7 @@ class CoworkingApplicationTests {
 
     }
 
-    // El listado tiene que estar ordenado inverso alfabéticamente por nombre (z..a).
+
     // 4. Devuelve un listado con los id's y emails de los miembros que se hayan registrado con una cuenta de yahoo.es
     // en el año 2024.
 
@@ -116,7 +117,7 @@ class CoworkingApplicationTests {
 
     }
     // 5. Devuelve un listado de los miembros cuyo primer apellido es Martín. El listado tiene que estar ordenado
-
+    // por fecha de alta en el coworking de más reciente a menos reciente y nombre y apellidos en orden alfabético.
     @Test
     void test5(){
         List<Miembro> miembros = miembroRepository.findAll();
@@ -131,10 +132,10 @@ class CoworkingApplicationTests {
 
         Assertions.assertTrue(miembroMartin.contains("Paula Martín"));
     }
-    // por fecha de alta en el coworking de más reciente a menos reciente y nombre y apellidos en orden alfabético.
+
     // 6. Devuelve el gasto total (estimado) que ha realizado la miembro Ana Beltrán en reservas del coworking.
     @Test
-            void test6(){
+    void test6(){
         List<Reserva> reservas = reservaRepository.findAll();
 
 
@@ -225,6 +226,8 @@ class CoworkingApplicationTests {
     }
     // 12. Devuelve un listado que muestre todas las reservas y salas en las que se ha registrado cada miembro.
     // El resultado debe mostrar todos los datos del miembro primero junto con un sublistado de sus reservas y salas.
+    // El listado debe mostrar los datos de los miembros ordenados alfabéticamente por nombre.
+
     @Test
     void test12(){
 
@@ -251,7 +254,7 @@ class CoworkingApplicationTests {
 
 
 
-    // El listado debe mostrar los datos de los miembros ordenados alfabéticamente por nombre.
+
     // 13. Devuelve el total de personas que podrían alojarse simultáneamente en el centro en base al aforo de todas las salas.
     @Test
     void test13(){
